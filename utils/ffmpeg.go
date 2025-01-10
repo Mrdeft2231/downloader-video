@@ -2,9 +2,11 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 func CheckFFmpeg() error {
@@ -17,8 +19,10 @@ func CheckFFmpeg() error {
 	return nil
 }
 
-func RunFFmpeg(url, output string) error {
+func RunFFmpeg(url string) error {
 	ffmpegPath := filepath.Join(".", "ffmpeg.exe") // Путь к ffmpeg в текущей папке
+
+	output := generateOutputFileName(url)
 
 	cmd := exec.Command(ffmpegPath, "-i", url, "-c", "copy", output)
 
@@ -26,4 +30,13 @@ func RunFFmpeg(url, output string) error {
 	cmd.Stderr = os.Stderr
 
 	return cmd.Run()
+}
+
+func generateOutputFileName(url string) string {
+	invalidChars := []string{":", "/", "\\", "?", "*", "<", ">", "|", "\""}
+	baseName := url
+	for _, char := range invalidChars {
+		baseName = strings.ReplaceAll(baseName, char, "_")
+	}
+	return fmt.Sprintf("videos/%s.mp4", baseName)
 }
